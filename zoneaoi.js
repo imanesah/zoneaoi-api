@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs');
 const app = express();
-const port = process.env.PORT || 3003;
 
 // Middleware pour parser le JSON
 app.use(express.json());
@@ -53,7 +52,7 @@ app.get('/zones/:id', (req, res) => {
   res.json(zone);
 });
 
-// Endpoint POST pour ajouter une nouvelle zone
+// Endpoint POST pour ajouter une nouvelle zone (temporaire, non persistant)
 app.post('/zones', (req, res) => {
   const { geometry } = req.body;
 
@@ -62,23 +61,23 @@ app.post('/zones', (req, res) => {
   }
 
   const newZone = {
-    _id: { $oid: `zoneId_${Date.now()}` }, // Générer un _id au format MongoDB
+    _id: { $oid: `zoneId_${Date.now()}` },
     geometry,
     risk: getRandomRisk(),
     zoneId: `ZONE${zones.length + 1}`,
     tags: { landuse: req.body.tags?.landuse || 'unknown' },
-    bounding_box: req.body.bounding_box || [], // Optionnel, vide par défaut
+    bounding_box: req.body.bounding_box || [],
     buildings: req.body.buildings || [],
     cross_walks: req.body.cross_walks || 0,
     routes: req.body.routes || []
   };
 
   zones.push(newZone);
-  console.log('Nouvelle zone ajoutée:', newZone);
-  res.status(201).json({ message: 'Zone ajoutée', zone: newZone });
+  console.log('Nouvelle zone ajoutée (temporaire):', newZone);
+  res.status(201).json({ message: 'Zone ajoutée (temporaire, non sauvegardée)', zone: newZone });
 });
 
-// Endpoint PUT pour mettre à jour une zone
+// Endpoint PUT pour mettre à jour une zone (temporaire, non persistant)
 app.put('/zones/:id', (req, res) => {
   const zoneIndex = zones.findIndex(z => 
     (z._id && z._id.$oid === req.params.id) || z.zoneId === req.params.id
@@ -96,13 +95,13 @@ app.put('/zones/:id', (req, res) => {
     buildings: buildings || zones[zoneIndex].buildings,
     cross_walks: cross_walks !== undefined ? cross_walks : zones[zoneIndex].cross_walks,
     routes: routes || zones[zoneIndex].routes,
-    risk: getRandomRisk() // Mise à jour du risque à chaque modification
+    risk: getRandomRisk()
   };
-  console.log('Zone mise à jour:', zones[zoneIndex]);
-  res.json({ message: 'Zone mise à jour', zone: zones[zoneIndex] });
+  console.log('Zone mise à jour (temporaire):', zones[zoneIndex]);
+  res.json({ message: 'Zone mise à jour (temporaire, non sauvegardée)', zone: zones[zoneIndex] });
 });
 
-// Endpoint DELETE pour supprimer une zone
+// Endpoint DELETE pour supprimer une zone (temporaire, non persistant)
 app.delete('/zones/:id', (req, res) => {
   const zoneIndex = zones.findIndex(z => 
     (z._id && z._id.$oid === req.params.id) || z.zoneId === req.params.id
@@ -112,24 +111,9 @@ app.delete('/zones/:id', (req, res) => {
   }
 
   const deletedZone = zones.splice(zoneIndex, 1)[0];
-  console.log('Zone supprimée:', deletedZone);
-  res.json({ message: 'Zone supprimée', zone: deletedZone });
+  console.log('Zone supprimée (temporaire):', deletedZone);
+  res.json({ message: 'Zone supprimée (temporaire, non sauvegardée)', zone: deletedZone });
 });
 
-// Middleware pour sauvegarder les modifications dans le fichier JSON
-app.use((req, res, next) => {
-  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE') {
-    try {
-      fs.writeFileSync('geofencingDB.zones1.json', JSON.stringify(zones, null, 2));
-      console.log('Zones sauvegardées dans geofencingDB.zones1.json');
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde dans geofencingDB.zones1.json:', error);
-    }
-  }
-  next();
-});
-
-// Démarrer le serveur
-app.listen(process.env.PORT || 3003, () => {
-  console.log(`API démarrée sur http://localhost:${process.env.PORT || 3003}`);
-});
+// Export pour Vercel (pas de app.listen)
+module.exports = app;
