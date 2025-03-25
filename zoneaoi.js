@@ -20,13 +20,12 @@ try {
   const rawData = fs.readFileSync('geofencingDB.zones1.json', 'utf8');
   zones = JSON.parse(rawData).map(zone => ({
     ...zone,
-    risk: getRandomRisk() // Ajouter un risque aléatoire à chaque zone
+    risk: getRandomRisk()
   }));
-  console.log('Zones chargées avec succès depuis geofencingDB.zones1.json:', zones.length, 'zones');
+  console.log('Zones chargées avec succès:', zones.length);
 } catch (error) {
-  console.error('Erreur lors du chargement de geofencingDB.zones1.json:', error);
-  zones = []; // Initialiser avec un tableau vide en cas d'erreur
-  console.warn('Initialisation avec un tableau vide en raison de l\'erreur.');
+  console.error('Erreur de chargement:', error.message);
+  zones = [];
 }
 
 // Route par défaut pour tester le serveur
