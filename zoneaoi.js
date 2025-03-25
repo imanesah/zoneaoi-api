@@ -24,7 +24,7 @@ try {
   }));
   console.log('Zones chargées avec succès:', zones.length);
 } catch (error) {
-  console.error('Erreur de chargement:', error.message);
+  console.error('Erreur de chargement de geofencingDB.zones1.json:', error.message, error.stack);
   zones = [];
 }
 
